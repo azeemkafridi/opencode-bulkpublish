@@ -232,7 +232,7 @@ function Recent(props: { refreshKey: number }) {
                     <li class="bp-post">
                       <div class="bp-row bp-head">
                         <span class={`bp-status bp-status-${p.status}`}>{statusLabel(p.status)}</span>
-                        <Show when={canRetry(p.status)}>
+                        <Show when={canRetry(p.status, p.destinations)}>
                           <ctx.ui.Button size="small" variant="ghost" busy={retrying() === p.id} onClick={() => void retry(p.id)}>
                             {ctx.t("retry")}
                           </ctx.ui.Button>
@@ -290,8 +290,9 @@ function View() {
     <div class="bp-root">
       <Show when={state()} fallback={<ctx.ui.Loader />}>
         {(s) => (
-          <Show when={s().signedIn} fallback={<SignedOut />}>
-            <SignedIn />
+          // Keyed on the account, so a replaced key starts a fresh view.
+          <Show when={s().signedIn ? s().account : undefined} keyed fallback={<SignedOut />}>
+            {(_account: number) => <SignedIn />}
           </Show>
         )}
       </Show>

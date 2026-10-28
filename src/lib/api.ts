@@ -114,6 +114,11 @@ export async function send(client: BulkPublishClient, r: SendRequest): Promise<n
 		if (r.mode === "now") await client.publish(postId);
 		return postId;
 	} catch (e) {
+		// No answer to the publish request: it may have gone through, so keep the
+		// post rather than delete one that could be going out.
+		if (r.mode === "now" && postId !== null && e instanceof ApiError && e.status === 0) {
+			throw new ApiError(0, "We couldn't confirm the post was sent. Check Recent posts before trying again.");
+		}
 		if (r.mode === "now" || postId === null) {
 			if (postId !== null) await client.deletePost(postId).catch(() => {});
 			if (mediaId !== null) await client.deleteMedia(mediaId).catch(() => {});

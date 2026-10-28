@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { Service, type KeyStore } from "../src/lib/service"
+import { allowedApiBase, Service, type KeyStore } from "../src/lib/service"
+import { BulkPublishClient, send } from "../src/lib/api"
 import { canRetry, statusLabel } from "../src/lib/view"
 
 const KEY = "bp_abcdefghijklmnop1234"
@@ -116,7 +117,8 @@ describe("posts list", () => {
     expect(statusLabel("partial")).toBe("Partly published")
     expect(statusLabel("processing")).toBe("Processing")
     expect(statusLabel("some_new")).toBe("Some new")
-    expect(["failed", "partial", "published", "processing"].filter(canRetry)).toEqual(["failed", "partial"])
+    expect(["failed", "partial", "published", "processing"].filter((s) => canRetry(s))).toEqual(["failed", "partial"])
+    expect(canRetry("failed", [{ status: "failed" }, { status: "unconfirmed" }])).toBe(false)
   })
 })
 
@@ -132,5 +134,32 @@ describe("attachments", () => {
     })
     await expect(service.send({ content: "a", channelIds: [1], file: "/tmp/big.mp4", mode: "draft" })).rejects.toThrow(/100 MB/)
     expect(read).toBe(false)
+  })
+})
+
+describe("api address", () => {
+  it("only sends the key to BulkPublish or this machine", () => {
+    expect(allowedApiBase(undefined)).toBe("https://app.bulkpublish.com")
+    expect(allowedApiBase("https://staging.bulkpublish.com/x")).toBe("https://staging.bulkpublish.com")
+    expect(allowedApiBase("http://localhost:4322")).toBe("http://localhost:4322")
+    expect(allowedApiBase("https://evil.example")).toBe("https://app.bulkpublish.com")
+    expect(allowedApiBase("https://bulkpublish.com.evil.example")).toBe("https://app.bulkpublish.com")
+  })
+})
+
+describe("publish now with no answer", () => {
+  it("keeps the post when the publish request gets no answer", async () => {
+    const calls: string[] = []
+    const f = (async (url: string, init: RequestInit) => {
+      const k = `${init.method} ${new URL(url).pathname}`
+      calls.push(k)
+      if (k === "POST /api/posts/77/publish") throw new TypeError("network down")
+      return new Response(JSON.stringify({ id: 77 }), { status: 200 })
+    }) as typeof fetch
+    const client = new BulkPublishClient("https://app.example.com", KEY, f)
+    await expect(
+      send(client, { content: "x", targets: [{ id: 1, platform: "x", name: "me", usable: true }], media: null, mode: "now" }),
+    ).rejects.toThrow(/couldn't confirm/)
+    expect(calls).not.toContain("DELETE /api/posts/77")
   })
 })

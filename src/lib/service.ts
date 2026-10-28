@@ -1,7 +1,7 @@
 // What the main process does for a window: hold the key, call the API, read
 // attachments from disk. No Electron or opencode imports, so it is unit-tested.
 import { BulkPublishClient, send, type PostSummary } from "./api"
-import { looksLikeKey, mediaKindOf, mimeFromName, planTargets, type Channel, type Skipped, zonedToUtcIso } from "./core"
+import { DEFAULT_API_BASE, looksLikeKey, mediaKindOf, normalizeApiBase, mimeFromName, planTargets, type Channel, type Skipped, zonedToUtcIso } from "./core"
 
 export interface KeyStore {
   get(): string | null
@@ -15,6 +15,18 @@ export interface SendRequest {
   mode: "now" | "schedule" | "draft"
   scheduledAt?: string
   timezone?: string
+}
+
+/**
+ * The address the key may be sent to: BulkPublish itself, or this machine for
+ * local testing. Anything else falls back to BulkPublish, so a config file can't
+ * point the key at another host.
+ */
+export function allowedApiBase(v: unknown): string {
+  const base = normalizeApiBase(v)
+  const host = new URL(base).hostname
+  const ok = host === "bulkpublish.com" || host.endsWith(".bulkpublish.com") || host === "localhost" || host === "127.0.0.1"
+  return ok ? base : DEFAULT_API_BASE
 }
 
 /** Largest attachment we read into memory before sending. */

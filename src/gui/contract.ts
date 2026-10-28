@@ -36,7 +36,7 @@ const Skipped = Schema.Struct({ name: Schema.String, platform: Schema.String, re
 
 export const BulkPublish = Ipc.define({
   id: "opencode-bulkpublish.api",
-  state: Schema.Struct({ signedIn: Schema.Boolean }),
+  state: Schema.Struct({ signedIn: Schema.Boolean, account: Schema.Number }),
   methods: {
     setKey: { input: Schema.String },
     signOut: {},

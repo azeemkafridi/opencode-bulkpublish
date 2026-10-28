@@ -31,7 +31,7 @@ Then restart OpenCode Desktop.
 
 ## Use
 
-1. Create an API key in BulkPublish under **Settings > API**.
+1. Create an API key on the **Developer** page in BulkPublish (app.bulkpublish.com/developer).
 2. In OpenCode, open **Settings > BulkPublish** and choose **Connect API key**,
    or run **BulkPublish: Connect API key** from the command palette.
 3. Type `/bulkpublish` in the prompt box, or run **BulkPublish: Compose a social
@@ -47,7 +47,7 @@ available. **Sign out** removes it.
 
 | Option | Default | What it does |
 |---|---|---|
-| `apiBase` | `https://app.bulkpublish.com` | The BulkPublish address to talk to. Only `https`, or `http` on `localhost` for testing. |
+| `apiBase` | `https://app.bulkpublish.com` | The BulkPublish address to talk to: a `bulkpublish.com` address, or `localhost` for testing. Anything else is ignored. Your key is only sent to the address it was connected on, so changing this signs you out. |
 
 ```json
 { "plugins": [{ "package": "opencode-bulkpublish", "options": { "apiBase": "https://app.bulkpublish.com" } }] }

@@ -119,3 +119,18 @@ describe("posts list", () => {
     expect(["failed", "partial", "published", "processing"].filter(canRetry)).toEqual(["failed", "partial"])
   })
 })
+
+describe("attachments", () => {
+  it("refuses a file over the single-upload limit before reading it", async () => {
+    let read = false
+    const service = new Service({
+      keys: { get: () => KEY, set: () => {} },
+      base: "https://app.example.com",
+      fetch: (async () => new Response(JSON.stringify({ channels: [{ id: 1, platform: "x" }] }))) as typeof fetch,
+      readFile: async () => ((read = true), new Uint8Array()),
+      fileSize: async () => 101 * 1024 * 1024,
+    })
+    await expect(service.send({ content: "a", channelIds: [1], file: "/tmp/big.mp4", mode: "draft" })).rejects.toThrow(/100 MB/)
+    expect(read).toBe(false)
+  })
+})

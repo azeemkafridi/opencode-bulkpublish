@@ -18,7 +18,7 @@ export interface SendRequest {
 }
 
 /** Largest attachment we read into memory before sending. */
-export const MAX_FILE_BYTES = 512 * 1024 * 1024
+export const MAX_FILE_BYTES = 100 * 1024 * 1024
 
 export interface Deps {
   keys: KeyStore
@@ -76,7 +76,7 @@ export class Service {
       const filename = r.file.split(/[\\/]/).pop() ?? "file"
       const mimeType = mimeFromName(filename)
       if (!mimeType) throw new Error("Attach an image (PNG, JPEG, GIF, WebP) or a video (MP4, MOV, WebM).")
-      if ((await this.d.fileSize(r.file)) > MAX_FILE_BYTES) throw new Error("That file is too large to attach here.")
+      if ((await this.d.fileSize(r.file)) > MAX_FILE_BYTES) throw new Error("Attach a file under 100 MB.")
       file = { bytes: await this.d.readFile(r.file), filename, mimeType }
     }
     const media = mediaKindOf(file?.mimeType)

@@ -3,13 +3,27 @@
   "version": "0.1.0",
   "description": "Write, schedule and publish social media posts from OpenCode Desktop with BulkPublish.",
   "license": "MIT",
+  "author": "BulkPublish",
   "type": "module",
   "homepage": "https://www.bulkpublish.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azeemkafridi/opencode-bulkpublish.git"
+  },
+  "bugs": {
+    "url": "https://github.com/azeemkafridi/opencode-bulkpublish/issues"
+  },
   "keywords": [
     "opencode",
     "opencode-plugin",
+    "opencode-desktop",
     "social media",
     "scheduler",
+    "bluesky",
+    "linkedin",
+    "mastodon",
+    "threads",
+    "x",
     "bulkpublish"
   ],
   "exports": {
@@ -25,10 +39,11 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
-    "@opencode/plugin": "2.2.0"
+    "@opencode/plugin": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

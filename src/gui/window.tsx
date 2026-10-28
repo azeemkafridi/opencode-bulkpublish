@@ -10,6 +10,11 @@ type Ctx = Parameters<Plugin.Setup<typeof definition>>[0]
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
+/** Toasts cut a long title short, so the reason goes in the description. */
+function fail(ctx: Ctx, title: string, e: unknown) {
+  ctx.toast.show({ variant: "error", title, description: message(e), duration: 10_000 })
+}
+
 async function connect(ctx: Ctx) {
   const key = await ctx.dialogs.prompt({
     title: ctx.t("connect.title"),
@@ -24,7 +29,7 @@ async function connect(ctx: Ctx) {
     await ctx.main(BulkPublish).setKey(key)
     ctx.toast.show({ variant: "success", title: ctx.t("connect.done") })
   } catch (e) {
-    ctx.toast.show({ variant: "error", title: message(e) })
+    fail(ctx, ctx.t("fail.connect"), e)
   } finally {
     busy.dismiss()
   }
@@ -43,7 +48,7 @@ function SignedOut() {
       <ctx.ui.Button variant="contrast" onClick={() => void connect(ctx)}>
         {ctx.t("connect")}
       </ctx.ui.Button>
-      <ctx.ui.Button variant="ghost" onClick={() => ctx.system.openExternal("https://app.bulkpublish.com/settings/api")}>
+      <ctx.ui.Button variant="ghost" onClick={() => ctx.system.openExternal("https://app.bulkpublish.com/developer")}>
         {ctx.t("signedOut.getKey")}
       </ctx.ui.Button>
     </div>
@@ -73,7 +78,7 @@ function Composer(props: { channels: readonly Channel[]; onSent: () => void }) {
       })) ?? []
       if (path) setFile(path)
     } catch (e) {
-      ctx.toast.show({ variant: "error", title: message(e) })
+      fail(ctx, ctx.t("fail.attach"), e)
     }
   }
 
@@ -89,14 +94,18 @@ function Composer(props: { channels: readonly Channel[]; onSent: () => void }) {
       })
       ctx.toast.show({ variant: "success", title: ctx.t(`sent.${mode}`) })
       for (const s of result.skipped) {
-        ctx.toast.show({ title: ctx.t("sent.skipped", { name: `${s.name} (${platformLabel(s.platform)})`, reason: s.reason }) })
+        ctx.toast.show({
+          title: ctx.t("sent.skippedTitle", { name: s.name }),
+          description: ctx.t("sent.skipped", { platform: platformLabel(s.platform), reason: s.reason }),
+          duration: 10_000,
+        })
       }
       setText("")
       setFile(undefined)
       setWhen("")
       props.onSent()
     } catch (e) {
-      ctx.toast.show({ variant: "error", title: message(e) })
+      fail(ctx, ctx.t("fail.send"), e)
     } finally {
       setBusy(undefined)
     }
@@ -201,7 +210,7 @@ function Recent(props: { refreshKey: number }) {
       ctx.toast.show({ variant: "success", title: ctx.t("retry.done") })
       await refetch()
     } catch (e) {
-      ctx.toast.show({ variant: "error", title: message(e) })
+      fail(ctx, ctx.t("fail.retry"), e)
     } finally {
       setRetrying(undefined)
     }

@@ -1,0 +1,42 @@
+{
+  "name": "opencode-bulkpublish",
+  "version": "0.1.0",
+  "description": "Write, schedule and publish social media posts from OpenCode Desktop with BulkPublish.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://www.bulkpublish.com",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "social media",
+    "scheduler",
+    "bulkpublish"
+  ],
+  "exports": {
+    "./gui-experimental": "./dist/gui-experimental.cjs"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opencode/plugin": "2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "electron": "^45.1.0",
+    "solid-js": "^1.9.17",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.7",
+    "vite-plugin-solid": "^2.11.14",
+    "vitest": "^5.0.5"
+  }
+}
